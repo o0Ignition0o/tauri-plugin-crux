@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-handle-response"
+description = "Enables the handle_response command without any pre-configured scope."
+commands.allow = ["handle_response"]
+
+[[permission]]
+identifier = "deny-handle-response"
+description = "Denies the handle_response command without any pre-configured scope."
+commands.deny = ["handle_response"]

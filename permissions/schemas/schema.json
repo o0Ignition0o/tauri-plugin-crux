@@ -295,6 +295,18 @@
       "type": "string",
       "oneOf": [
         {
+          "description": "Enables the handle_response command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-handle-response",
+          "markdownDescription": "Enables the handle_response command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the handle_response command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-handle-response",
+          "markdownDescription": "Denies the handle_response command without any pre-configured scope."
+        },
+        {
           "description": "Enables the process_event command without any pre-configured scope.",
           "type": "string",
           "const": "allow-process-event",

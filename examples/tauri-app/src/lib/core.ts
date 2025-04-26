@@ -1,26 +1,57 @@
-import { process_event, view } from "shared";
+import { process_event, handle_response, view } from "shared";
 import initCore from "shared";
 import { writable } from "svelte/store";
 import {
   EffectVariantRender,
+  EffectVariantHttp,
+  EffectVariantServerSentEvents,
   ViewModel,
   Request,
 } from "shared_types/types/shared_types";
-import type { Effect, Event } from "shared_types/types/shared_types";
+import type {
+  Effect,
+  Event,
+  HttpResponse,
+  SseResponse,
+} from "shared_types/types/shared_types";
 import {
   BincodeSerializer,
   BincodeDeserializer,
 } from "shared_types/bincode/mod";
+import { request as http } from "./http";
+import { request as sse } from "./sse";
 import { isTauri } from "@tauri-apps/api/core";
-import { processEvent, view as tauriView } from "../../../../dist-js";
+import {
+  processEvent,
+  handleResponse as tauriHandleResponse,
+  view as tauriView,
+} from "../../../../dist-js";
 
-const { subscribe, set } = writable(new ViewModel("0"));
+type Response = HttpResponse | SseResponse;
+
+const { subscribe, set } = writable(new ViewModel("", false));
 
 export async function update(event: Event) {
   if (isTauri()) {
     await tauriUpdate(event);
   } else {
     await wasmUpdate(event);
+  }
+}
+
+export async function respond(id: number, response: Response) {
+  const serializer = new BincodeSerializer();
+  response.serialize(serializer);
+
+  const effects = isTauri()
+    ? await tauriHandleResponse(id, serializer.getBytes())
+    : await handle_response(id, serializer.getBytes());
+
+  if (effects) {
+    const requests = deserializeRequests(effects);
+    for (const { id, effect } of requests) {
+      processEffect(id, effect);
+    }
   }
 }
 
@@ -33,7 +64,6 @@ const getView = async (): Promise<Uint8Array | null> => {
 };
 
 const tauriUpdate = async (event: Event) => {
-  // TODO: it would be amazing if serialization happened in the exposed processEvent function
   const serializer = new BincodeSerializer();
   event.serialize(serializer);
   const effects = await processEvent(serializer.getBytes());
@@ -63,15 +93,32 @@ const wasmUpdate = async (event: Event) => {
   }
 };
 
-function processEffect(_id: number, effect: Effect) {
+async function processEffect(id: number, effect: Effect) {
   console.log("effect", effect);
   switch (effect.constructor) {
     case EffectVariantRender: {
-      getView().then((view) => view && set(deserializeView(view)));
+      getView().then((view) => view && updateView(deserializeView(view)));
+      break;
+    }
+    case EffectVariantHttp: {
+      const request = (effect as EffectVariantHttp).value;
+      const response = await http(request);
+      respond(id, response);
+      break;
+    }
+    case EffectVariantServerSentEvents: {
+      const request = (effect as EffectVariantServerSentEvents).value;
+      for await (const response of sse(request)) {
+        respond(id, response);
+      }
       break;
     }
   }
 }
+
+export const updateView = (view: ViewModel) => {
+  set(view);
+};
 
 function deserializeRequests(bytes: Uint8Array): Request[] {
   const deserializer = new BincodeDeserializer(bytes);

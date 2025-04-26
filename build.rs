@@ -1,4 +1,4 @@
-const COMMANDS: &[&str] = &["process_event", "view"];
+const COMMANDS: &[&str] = &["process_event", "view", "handle_response"];
 
 fn main() {
     tauri_plugin::Builder::new(COMMANDS)

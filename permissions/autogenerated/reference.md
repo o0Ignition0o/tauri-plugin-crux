@@ -19,6 +19,32 @@ Default permissions for the plugin
 <tr>
 <td>
 
+`crux:allow-handle-response`
+
+</td>
+<td>
+
+Enables the handle_response command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`crux:deny-handle-response`
+
+</td>
+<td>
+
+Denies the handle_response command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `crux:allow-process-event`
 
 </td>

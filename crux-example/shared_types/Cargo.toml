@@ -6,5 +6,6 @@ edition = "2024"
 [build-dependencies]
 anyhow.workspace = true
 crux_core = { workspace = true, features = ["typegen"] }
+crux_http = { workspace = true, features = ["typegen"] }
 shared = { path = "../shared", features = ["typegen"] }
 serde_json = "1"
