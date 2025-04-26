@@ -29,23 +29,24 @@ use desktop::Crux;
 use mobile::Crux;
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the crux APIs.
-pub trait CruxExt<R: Runtime, A: App>
+pub trait CruxExt<R: Runtime, C: DeserializeOwned, A: App>
 where
     A: App + Send + Sync + 'static,
     A::Model: Send + Sync,
     A::Capabilities: Send + Sync,
 {
-    fn crux(&self) -> &Crux<R, A>;
+    fn crux(&self) -> &Crux<R, C, A>;
 }
 
-impl<R: Runtime, T: Manager<R>, A> crate::CruxExt<R, A> for T
+impl<R: Runtime, C: DeserializeOwned, T: Manager<R>, A> crate::CruxExt<R, C, A> for T
 where
+    C: Send + Sync + 'static,
     A: App + Send + Sync + 'static,
     A::Model: Send + Sync,
     A::Capabilities: Send + Sync,
 {
-    fn crux(&self) -> &Crux<R, A> {
-        self.state::<Crux<R, A>>().inner()
+    fn crux(&self) -> &Crux<R, C, A> {
+        self.state::<Crux<R, C, A>>().inner()
     }
 }
 
