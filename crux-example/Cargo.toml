@@ -1,0 +1,26 @@
+[workspace]
+resolver = "3"
+
+members = ["shared", "shared_types"]
+
+[workspace.package]
+
+[workspace.dependencies]
+anyhow = "1"
+crux_core = "0.14"
+serde = "1.0"
+
+[workspace.metadata.bin]
+cargo-xcode = { version = "=1.7.0" }
+
+[profile]
+
+[profile.wasm-dev]
+inherits = "dev"
+opt-level = 1
+
+[profile.server-dev]
+inherits = "dev"
+
+[profile.android-dev]
+inherits = "dev"
