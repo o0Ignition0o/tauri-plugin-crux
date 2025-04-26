@@ -5,6 +5,7 @@ Default permissions for the plugin
 #### This default permission set includes the following:
 
 - `allow-process-event`
+- `allow-handle-response`
 - `allow-view`
 
 ## Permission Table

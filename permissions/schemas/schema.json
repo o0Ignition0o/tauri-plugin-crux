@@ -331,10 +331,10 @@
           "markdownDescription": "Denies the view command without any pre-configured scope."
         },
         {
-          "description": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-process-event`\n- `allow-view`",
+          "description": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-process-event`\n- `allow-handle-response`\n- `allow-view`",
           "type": "string",
           "const": "default",
-          "markdownDescription": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-process-event`\n- `allow-view`"
+          "markdownDescription": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-process-event`\n- `allow-handle-response`\n- `allow-view`"
         }
       ]
     }

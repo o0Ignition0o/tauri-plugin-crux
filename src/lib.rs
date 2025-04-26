@@ -53,6 +53,21 @@ where
 #[serde(transparent)]
 pub struct EffectId(pub u32);
 
+#[derive(Debug, Serialize)]
+pub struct Request<Eff>
+where
+    Eff: Serialize,
+{
+    pub id: EffectId,
+    pub effect: Eff,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Response {
+    pub id: usize,
+    pub response: Vec<u8>,
+}
+
 pub struct ResolveRegistry(Mutex<Slab<ResolveSerialized>>);
 
 impl Default for ResolveRegistry {
@@ -97,7 +112,10 @@ where
                         .map(|effect| {
                             let (eff, resolve) = effect.serialize();
                             let id = registry.0.lock().unwrap().insert(resolve);
-                            (id, eff)
+                            Request {
+                                id: EffectId(id.try_into().unwrap()),
+                                effect: eff,
+                            }
                         })
                         .collect::<Vec<_>>();
 
@@ -108,18 +126,12 @@ where
                 "handle_response" => {
                     let (id, response): (usize, Vec<u8>) = match handler.message.payload() {
                         InvokeBody::Json(payload) => {
-                            // Possible values of an IPC payload.
-                            //
-                            // ### Android
-                            // On Android, [InvokeBody::Raw] is not supported. The enum will always contain [InvokeBody::Json].
-                            // When targeting Android Devices, consider passing raw bytes as a base64 [[std::string::String]], which is still more efficient than passing them as a number array in [InvokeBody::Json]
-                            let b64: String = serde_json::from_value(payload.clone()).unwrap();
-                            let raw = BASE64_STANDARD.decode(b64).unwrap();
-                            bincode::deserialize(&raw)
+                            let response: Response =
+                                serde_json::from_value(payload.clone()).unwrap();
+                            (response.id, response.response)
                         }
-                        InvokeBody::Raw(bytes) => bincode::deserialize(bytes),
-                    }
-                    .unwrap();
+                        InvokeBody::Raw(bytes) => bincode::deserialize(bytes).unwrap(),
+                    };
 
                     // TODO: we might be holding the lock a bit too long here
                     match registry.0.lock().unwrap().get_mut(id) {

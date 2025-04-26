@@ -1,9 +1,9 @@
 mod crux_example;
-use shared::{Core, Counter};
+use shared::{App, Core};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let crux_core = Core::<Counter>::new();
+    let crux_core = Core::<App>::new();
 
     let devtools = tauri_plugin_devtools::init();
     tauri::Builder::default()
