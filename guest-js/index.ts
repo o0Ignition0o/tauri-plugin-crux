@@ -8,3 +8,10 @@ export async function processEvent(
     event
   );
 }
+
+export async function view(
+): Promise<Uint8Array | null> {
+  return await invoke<Uint8Array | null >(
+    "plugin:crux|view"
+  );
+}

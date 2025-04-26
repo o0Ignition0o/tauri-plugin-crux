@@ -307,10 +307,22 @@
           "markdownDescription": "Denies the process_event command without any pre-configured scope."
         },
         {
-          "description": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-process-event`",
+          "description": "Enables the view command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-view",
+          "markdownDescription": "Enables the view command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the view command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-view",
+          "markdownDescription": "Denies the view command without any pre-configured scope."
+        },
+        {
+          "description": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-process-event`\n- `allow-view`",
           "type": "string",
           "const": "default",
-          "markdownDescription": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-process-event`"
+          "markdownDescription": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-process-event`\n- `allow-view`"
         }
       ]
     }

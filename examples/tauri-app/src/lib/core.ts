@@ -12,7 +12,7 @@ import {
   BincodeDeserializer,
 } from "shared_types/bincode/mod";
 import { isTauri } from "@tauri-apps/api/core";
-import { processEvent } from "../../../../dist-js";
+import { processEvent, view as tauriView } from "../../../../dist-js";
 
 const { subscribe, set } = writable(new ViewModel("0"));
 
@@ -23,6 +23,14 @@ export async function update(event: Event) {
     await wasmUpdate(event);
   }
 }
+
+const getView = async (): Promise<Uint8Array | null> => {
+  if (isTauri()) {
+    return await tauriView();
+  } else {
+    return view();
+  }
+};
 
 const tauriUpdate = async (event: Event) => {
   // TODO: it would be amazing if serialization happened in the exposed processEvent function
@@ -59,7 +67,7 @@ function processEffect(_id: number, effect: Effect) {
   console.log("effect", effect);
   switch (effect.constructor) {
     case EffectVariantRender: {
-      set(deserializeView(view()));
+      getView().then((view) => view && set(deserializeView(view)));
       break;
     }
   }
