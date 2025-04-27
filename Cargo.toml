@@ -12,13 +12,14 @@ links = "tauri-plugin-crux"
 tauri = { version = "2.5.0" }
 serde = "1.0"
 thiserror = "2"
-crux_core = { path = "../crux/crux_core" } # "0.14"
+crux_core = { git = "ssh://git@github.com/o0Ignition0o/crux.git", branch = "feat/decouple_registry_and_bridge" } # "0.14"
 serde_json = "1.0.140"
 base64 = "0.22.1"
 # use crux's version
 bincode = "=1.3.3"
 slab = "0.4.9"
 erased-serde = "0.4.6"
+tokio = "1.44.2"
 
 [build-dependencies]
 tauri-plugin = { version = "2.2.0", features = ["build"] }

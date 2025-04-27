@@ -7,8 +7,8 @@ members = ["shared", "shared_types"]
 
 [workspace.dependencies]
 anyhow = "1"
-crux_core = { path = "../../crux/crux_core" } # "0.14"
-crux_http = { path = "../../crux/crux_http" } # "0.13"
+crux_core = { git = "ssh://git@github.com/o0Ignition0o/crux.git", branch = "feat/decouple_registry_and_bridge" } # "0.14"
+crux_http = { git = "ssh://git@github.com/o0Ignition0o/crux.git", branch = "feat/decouple_registry_and_bridge" } # "0.13"
 serde = "1.0"
 
 [workspace.metadata.bin]
