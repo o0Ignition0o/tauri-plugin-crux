@@ -12,6 +12,10 @@ use tauri::{
     Manager, Runtime,
 };
 
+pub mod reexports {
+    pub use crux_core;
+}
+
 pub use models::*;
 
 mod crux;
@@ -28,14 +32,15 @@ pub struct TempResponse {
 }
 
 /// Initializes the plugin.
-pub fn init<R: Runtime, A>(crux_core: Core<A>) -> TauriPlugin<R>
+pub fn init<R: Runtime, A>(crux_core: Core<A>, native_effect_handler: impl FnMut(&Core<A>, <A as App>::Effect) -> Vec<<A as App>::Effect> + Send + 'static) -> TauriPlugin<R>
 where
     A: App + Send + Sync + 'static,
     A::Model: Send + Sync,
     A::Capabilities: Send + Sync,
     A::Event: DeserializeOwned,
 {
-    let crux = Crux::new(crux_core);
+    let crux = Crux::new(crux_core, native_effect_handler);
+
     Builder::new("crux")
         // It is recommended you use the tauri::generate_handler to generate the input to this method, as the input type is not considered stable yet.
         // Unfortunately the macro doesn't play nice with generics, so we'll have to handle it manually for now

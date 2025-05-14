@@ -35,7 +35,12 @@ where
     A::Capabilities: Send,
     A::Model: Send,
 {
-    pub fn new(core: Core<A>) -> Self
+    pub fn new(
+        core: Core<A>,
+        mut native_effect_handler: impl FnMut(&Core<A>, <A as App>::Effect) -> Vec<<A as App>::Effect>
+            + Send
+            + 'static,
+    ) -> Self
     where
         A: App,
     {
@@ -44,23 +49,27 @@ where
         let mut registry = ResolveRegistry(Default::default());
 
         let handle = std::thread::spawn(move || {
+            let c = &core;
             while let Some((command, response_sender)) = receiver.blocking_recv() {
                 match command {
                     Command::ProcessEvent(event) => {
-                        let response = core.process_event(event);
-                        let responses = response
-                            .into_iter()
-                            .map(|effect| {
-                                let (eff, resolve) = effect.serialize();
-                                let id = registry.0.insert(resolve);
-                                Request {
-                                    id: EffectId(id.try_into().unwrap()),
-                                    effect: eff,
-                                }
-                            })
-                            .collect::<Vec<_>>();
+                        let response = c.process_event(event);
+                        let mut output = Vec::new();
 
-                        let serialized = bincode::serialize(&responses).unwrap();
+                        for effect in response {
+                            output.extend(native_effect_handler(c, effect).into_iter().map(
+                                |effect| {
+                                    let (eff, resolve) = effect.serialize();
+                                    let id = registry.0.insert(resolve);
+                                    Request {
+                                        id: EffectId(id.try_into().unwrap()),
+                                        effect: eff,
+                                    }
+                                },
+                            ));
+                        }
+
+                        let serialized = bincode::serialize(&output).unwrap();
                         response_sender.send(serialized).unwrap();
                     }
                     Command::HandleResponse(id, response) => {

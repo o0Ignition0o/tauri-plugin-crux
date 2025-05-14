@@ -1,5 +1,5 @@
 pub use app::*;
-pub use crux_core::{bridge::Bridge, Core, Request};
+pub use crux_core::{Core, Request, bridge::Bridge};
 use lazy_static::lazy_static;
 use wasm_bindgen::prelude::wasm_bindgen;
 

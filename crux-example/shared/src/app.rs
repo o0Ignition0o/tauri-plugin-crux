@@ -1,7 +1,7 @@
-use chrono::{serde::ts_milliseconds_option::deserialize as ts_milliseconds_option, DateTime, Utc};
+use chrono::{DateTime, Utc, serde::ts_milliseconds_option::deserialize as ts_milliseconds_option};
 use crux_core::{
-    render::{render, Render},
     Command,
+    render::{Render, render},
 };
 use crux_http::command::Http;
 use serde::{Deserialize, Serialize};
@@ -153,9 +153,9 @@ mod tests {
     use chrono::{TimeZone, Utc};
 
     use super::{App, Event, Model};
-    use crate::{capabilities::sse::SseRequest, sse::SseResponse, Count, Effect};
+    use crate::{Count, Effect, capabilities::sse::SseRequest, sse::SseResponse};
 
-    use crux_core::{assert_effect, App as _};
+    use crux_core::{App as _, assert_effect};
     use crux_http::{
         protocol::{HttpRequest, HttpResponse, HttpResult},
         testing::ResponseBuilder,

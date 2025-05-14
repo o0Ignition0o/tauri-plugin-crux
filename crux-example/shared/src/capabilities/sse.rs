@@ -1,14 +1,14 @@
 use std::{convert::From, future};
 
-use async_sse::{decode, Event as SseEvent};
+use async_sse::{Event as SseEvent, decode};
 use async_std::io::Cursor;
 use futures::{Stream, StreamExt};
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
 use crux_core::{
+    Request,
     capability::{CapabilityContext, Operation},
     command::StreamBuilder,
-    Request,
 };
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
