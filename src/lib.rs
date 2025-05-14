@@ -32,7 +32,12 @@ pub struct TempResponse {
 }
 
 /// Initializes the plugin.
-pub fn init<R: Runtime, A>(crux_core: Core<A>, native_effect_handler: impl FnMut(&Core<A>, <A as App>::Effect) -> Vec<<A as App>::Effect> + Send + 'static) -> TauriPlugin<R>
+pub fn init<R: Runtime, A>(
+    crux_core: Core<A>,
+    native_effect_handler: impl FnMut(&Core<A>, <A as App>::Effect) -> Vec<<A as App>::Effect>
+        + Send
+        + 'static,
+) -> TauriPlugin<R>
 where
     A: App + Send + Sync + 'static,
     A::Model: Send + Sync,

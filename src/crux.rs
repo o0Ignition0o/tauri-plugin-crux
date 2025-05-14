@@ -93,18 +93,23 @@ where
                             }
                         };
                         let response = core.process();
-                        let responses = response
-                            .into_iter()
-                            .map(|effect| {
-                                let (eff, resolve) = effect.serialize();
-                                let id = registry.0.insert(resolve);
-                                Request {
-                                    id: EffectId(id.try_into().unwrap()),
-                                    effect: eff,
-                                }
-                            })
-                            .collect::<Vec<_>>();
-                        let serialized = bincode::serialize(&responses).unwrap();
+
+                        let mut output = Vec::new();
+
+                        for effect in response {
+                            output.extend(native_effect_handler(c, effect).into_iter().map(
+                                |effect| {
+                                    let (eff, resolve) = effect.serialize();
+                                    let id = registry.0.insert(resolve);
+                                    Request {
+                                        id: EffectId(id.try_into().unwrap()),
+                                        effect: eff,
+                                    }
+                                },
+                            ));
+                        }
+
+                        let serialized = bincode::serialize(&output).unwrap();
                         response_sender.send(serialized).unwrap();
                     }
                     Command::View => {
