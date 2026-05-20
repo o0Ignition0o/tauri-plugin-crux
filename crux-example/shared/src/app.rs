@@ -1,9 +1,13 @@
-use chrono::{DateTime, Utc, serde::ts_milliseconds_option::deserialize as ts_milliseconds_option};
+use crate::sse::SseRequest;
+use chrono::{serde::ts_milliseconds_option::deserialize as ts_milliseconds_option, DateTime, Utc};
 use crux_core::{
+    macros::effect,
+    render::{render, RenderOperation},
     Command,
-    render::{Render, render},
 };
 use crux_http::command::Http;
+use crux_http::HttpRequest;
+use facet::Facet;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
@@ -25,13 +29,14 @@ pub struct Count {
 }
 // ANCHOR_END: model
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, Facet)]
 pub struct ViewModel {
     pub text: String,
     pub confirmed: bool,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Facet, Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[repr(C)]
 pub enum Event {
     // events from the shell
     Get,
@@ -41,17 +46,19 @@ pub enum Event {
 
     // events local to the core
     #[serde(skip)]
-    Set(crux_http::Result<crux_http::Response<Count>>),
+    #[facet(skip)]
+    Set(#[facet(opaque)] crux_http::Result<crux_http::Response<Count>>),
     #[serde(skip)]
-    Update(Count),
+    #[facet(skip)]
+    Update(#[facet(opaque)] Count),
 }
 
-#[cfg_attr(feature = "typegen", derive(crux_core::macros::Export))]
-#[derive(crux_core::macros::Effect)]
-pub struct Capabilities {
-    pub render: Render<Event>,
-    pub http: crux_http::Http<Event>,
-    pub sse: ServerSentEvents<Event>,
+#[effect(facet_typegen)]
+#[derive(Debug)]
+pub enum Effect {
+    Render(RenderOperation),
+    Http(HttpRequest),
+    ServerSentEvents(SseRequest),
 }
 
 #[derive(Default)]
@@ -61,20 +68,9 @@ impl crux_core::App for App {
     type Model = Model;
     type Event = Event;
     type ViewModel = ViewModel;
-    type Capabilities = Capabilities;
     type Effect = Effect;
 
-    // During the migration to the new Command API, the `update` method
-    // still requires the old `Capabilities` type. This will be removed in
-    // an upcoming release.
-    // In the meantime, we can delegate to our own `update` function,
-    // so that we can test the logic without the need for AppTester.
-    fn update(
-        &self,
-        msg: Self::Event,
-        model: &mut Self::Model,
-        _caps: &Self::Capabilities,
-    ) -> Command<Effect, Event> {
+    fn update(&self, msg: Self::Event, model: &mut Self::Model) -> Command<Effect, Event> {
         self.update(msg, model)
     }
 
@@ -153,9 +149,9 @@ mod tests {
     use chrono::{TimeZone, Utc};
 
     use super::{App, Event, Model};
-    use crate::{Count, Effect, capabilities::sse::SseRequest, sse::SseResponse};
+    use crate::{capabilities::sse::SseRequest, sse::SseResponse, Count, Effect};
 
-    use crux_core::{App as _, assert_effect};
+    use crux_core::{assert_effect, App as _};
     use crux_http::{
         protocol::{HttpRequest, HttpResponse, HttpResult},
         testing::ResponseBuilder,

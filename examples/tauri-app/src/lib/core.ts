@@ -43,9 +43,12 @@ export async function respond(id: number, response: Response) {
   const serializer = new BincodeSerializer();
   response.serialize(serializer);
 
+  console.log("calling handle response ", id, response);
   const effects = isTauri()
     ? await tauriHandleResponse(id, serializer.getBytes())
     : await handle_response(id, serializer.getBytes());
+
+  console.log("handle response got effects", id, effects);
 
   if (effects) {
     const requests = deserializeRequests(effects);
@@ -68,14 +71,10 @@ const tauriUpdate = async (event: Event) => {
   event.serialize(serializer);
   const effects = await processEvent(serializer.getBytes());
   if (effects) {
-    console.log("got effects", effects);
     const requests = deserializeRequests(effects);
-    console.log("got requests", requests);
     for (const { id, effect } of requests) {
       processEffect(id, effect);
     }
-  } else {
-    console.log("no effects ", effects);
   }
 };
 
@@ -94,7 +93,7 @@ const wasmUpdate = async (event: Event) => {
 };
 
 async function processEffect(id: number, effect: Effect) {
-  console.log("effect", effect);
+  console.log("effect", id, effect);
   switch (effect.constructor) {
     case EffectVariantRender: {
       getView().then((view) => view && updateView(deserializeView(view)));

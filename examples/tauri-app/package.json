@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "wasm:build": "pushd ../../crux-example/ && pushd shared_types && cargo b && popd && pushd shared && wasm-pack build --target web",
+    "wasm:build": "pushd ../../crux-example/ &&    cargo r -p shared --bin codegen --features codegen,facet_typegen -- --language typescript --output-dir generated/types &&    pushd shared_types &&    cargo b &&    popd && pushd shared &&    wasm-pack build --target web",
     "dev": "pnpm run wasm:build && vite --force",
     "build": "pnpm run wasm:build && vite build",
     "preview": "pnpm run wasm:build && vite preview",

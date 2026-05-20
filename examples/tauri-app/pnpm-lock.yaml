@@ -349,6 +349,9 @@ packages:
       svelte: ^5.0.0
       vite: ^6.0.0
 
+  '@tauri-apps/api@2.11.0':
+    resolution: {integrity: sha512-7CinYODhky9lmO23xHnUFv0Xt43fbtWMyxZcLcRBlFkcgXKuEirBvHpmtJ89YMhyeGcq20Wuc47Fa4XjyniywA==}
+
   '@tauri-apps/api@2.5.0':
     resolution: {integrity: sha512-Ldux4ip+HGAcPUmuLT8EIkk6yafl5vK0P0c0byzAKzxJh7vxelVtdPONjfgTm96PbN24yjZNESY8CKo8qniluA==}
 
@@ -837,6 +840,8 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@tauri-apps/api@2.11.0': {}
+
   '@tauri-apps/api@2.5.0': {}
 
   '@tauri-apps/cli-darwin-arm64@2.5.0':
@@ -1046,7 +1051,7 @@ snapshots:
 
   tauri-plugin-crux-api@file:../..:
     dependencies:
-      '@tauri-apps/api': 2.5.0
+      '@tauri-apps/api': 2.11.0
 
   tinyglobby@0.2.13:
     dependencies:

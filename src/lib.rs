@@ -1,15 +1,11 @@
-use std::sync::{Arc, Mutex};
-
-use base64::prelude::*;
-use bincode::Options;
+use base64::{prelude::BASE64_STANDARD, Engine};
 use crux::Crux;
-use crux_core::{bridge::ResolveSerialized, App, Core, Effect};
+use crux_core::{bridge::Bridge, App, EffectFFI};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use slab::Slab;
 use tauri::{
-    ipc::{InvokeBody, InvokeError},
+    ipc::InvokeBody,
     plugin::{Builder, TauriPlugin},
-    Manager, Runtime,
+    Runtime,
 };
 
 pub mod reexports {
@@ -19,7 +15,6 @@ pub mod reexports {
 pub use models::*;
 
 mod crux;
-
 mod error;
 mod models;
 
@@ -27,24 +22,20 @@ pub use error::{Error, Result};
 
 #[derive(Deserialize)]
 pub struct TempResponse {
-    id: usize,
+    id: u32,
     response: Vec<u8>,
 }
 
 /// Initializes the plugin.
-pub fn init<R: Runtime, A>(
-    crux_core: Core<A>,
-    native_effect_handler: impl FnMut(&Core<A>, <A as App>::Effect) -> Vec<<A as App>::Effect>
-        + Send
-        + 'static,
-) -> TauriPlugin<R>
+pub fn init<R: Runtime, A>(crux_app: Bridge<A>) -> TauriPlugin<R>
 where
     A: App + Send + Sync + 'static,
     A::Model: Send + Sync,
-    A::Capabilities: Send + Sync,
+    A::Effect: EffectFFI,
+    A::ViewModel: Serialize,
     A::Event: DeserializeOwned,
 {
-    let crux = Crux::new(crux_core, native_effect_handler);
+    let crux = Crux::new(crux_app);
 
     Builder::new("crux")
         // It is recommended you use the tauri::generate_handler to generate the input to this method, as the input type is not considered stable yet.
@@ -52,7 +43,7 @@ where
         .invoke_handler(move |handler| {
             match handler.message.command() {
                 "process_event" => {
-                    let event: A::Event = match handler.message.payload() {
+                    let event: Vec<u8> = match handler.message.payload() {
                         InvokeBody::Json(payload) => {
                             // Possible values of an IPC payload.
                             //
@@ -60,18 +51,16 @@ where
                             // On Android, [InvokeBody::Raw] is not supported. The enum will always contain [InvokeBody::Json].
                             // When targeting Android Devices, consider passing raw bytes as a base64 [[std::string::String]], which is still more efficient than passing them as a number array in [InvokeBody::Json]
                             let b64: String = serde_json::from_value(payload.clone()).unwrap();
-                            let raw = BASE64_STANDARD.decode(b64).unwrap();
-                            bincode::deserialize(&raw)
+                            BASE64_STANDARD.decode(b64).unwrap()
                         }
-                        InvokeBody::Raw(bytes) => bincode::deserialize(bytes),
-                    }
-                    .unwrap();
+                        InvokeBody::Raw(bytes) => bytes.clone(), // TODO: no need to clone that fr
+                    };
 
                     handler.resolver.resolve(crux.process_event(event).unwrap());
                     true
                 }
                 "handle_response" => {
-                    let (id, response): (usize, Vec<u8>) = match handler.message.payload() {
+                    let (id, response): (u32, Vec<u8>) = match handler.message.payload() {
                         // TODO: we whouldnt hit that path tbh
                         InvokeBody::Json(payload) => {
                             let response: TempResponse =
