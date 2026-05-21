@@ -1,30 +1,29 @@
 use std::{convert::From, future};
 
-use async_sse::{Event as SseEvent, decode};
+use async_sse::{decode, Event as SseEvent};
 use async_std::io::Cursor;
+use facet::Facet;
 use futures::{Stream, StreamExt};
-use serde::{Deserialize, Serialize, de::DeserializeOwned};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
-use crux_core::{
-    Request,
-    capability::{CapabilityContext, Operation},
-    command::StreamBuilder,
-};
+use crux_core::{capability::Operation, command::StreamBuilder, Request};
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Facet, Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct SseRequest {
     pub url: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Facet, Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[repr(C)]
 pub enum SseResponse {
     Chunk(Vec<u8>),
     Done,
 }
 
 impl SseResponse {
-    pub fn is_done(&self) -> bool {
-        matches!(self, SseResponse::Done)
+    #[must_use]
+    pub const fn is_done(&self) -> bool {
+        matches!(self, Self::Done)
     }
 }
 
@@ -32,24 +31,15 @@ impl Operation for SseRequest {
     type Output = SseResponse;
 }
 
-#[derive(crux_core::macros::Capability)]
-pub struct ServerSentEvents<Event> {
-    context: CapabilityContext<SseRequest, Event>,
-}
+pub struct ServerSentEvents;
 
-impl<Event> ServerSentEvents<Event>
-where
-    Event: Send + 'static,
-{
-    pub fn new(context: CapabilityContext<SseRequest, Event>) -> Self {
-        Self { context }
-    }
-
-    pub fn get<Effect, T>(
+impl ServerSentEvents {
+    pub fn get<Effect, Event, T>(
         url: impl Into<String>,
     ) -> StreamBuilder<Effect, Event, impl Stream<Item = T>>
     where
         Effect: From<Request<SseRequest>> + Send + 'static,
+        Event: Send + 'static,
         T: Send + DeserializeOwned,
     {
         let url = url.into();

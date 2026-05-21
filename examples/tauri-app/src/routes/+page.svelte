@@ -7,7 +7,7 @@
     EventVariantIncrement,
     EventVariantDecrement,
     EventVariantStartWatch,
-  } from "shared_types/types/shared_types";
+  } from "shared_types/app";
 
   onMount(async () => {
     console.log("mount");
