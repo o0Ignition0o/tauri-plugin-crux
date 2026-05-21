@@ -7,17 +7,14 @@ import {
   EffectVariantServerSentEvents,
   ViewModel,
   Request,
-} from "shared_types/types/shared_types";
+} from "shared_types/app";
 import type {
   Effect,
   Event,
   HttpResponse,
   SseResponse,
-} from "shared_types/types/shared_types";
-import {
-  BincodeSerializer,
-  BincodeDeserializer,
-} from "shared_types/bincode/mod";
+} from "shared_types/app";
+import { BincodeSerializer, BincodeDeserializer } from "shared_types/bincode";
 import { request as http } from "./http";
 import { request as sse } from "./sse";
 import { isTauri } from "@tauri-apps/api/core";

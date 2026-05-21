@@ -11,6 +11,12 @@ export default defineConfig({
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   // prevent Vite from obscuring rust errors
   clearScreen: false,
+  build: {
+    commonjsOptions: {
+        // Tells Vite to transform following packages that are CommonJS modules to ES Modules
+        include: [/shared/, /shared_types/, /node_modules/],
+    },
+  },
   // tauri expects a fixed port, fail if that port is not available
   server: {
     host: host || false,

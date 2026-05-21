@@ -6,7 +6,6 @@ use tauri_plugin_crux::reexports::crux_core;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let crux_core = Core::<App>::new();
-
     let bridge = Bridge::new(crux_core);
 
     let devtools = tauri_plugin_devtools::init();

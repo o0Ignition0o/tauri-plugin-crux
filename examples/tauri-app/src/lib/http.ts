@@ -1,9 +1,9 @@
-import type { HttpRequest, HttpResult } from "shared_types/types/shared_types";
+import type { HttpRequest, HttpResult } from "shared_types/app";
 import {
   HttpResponse,
   HttpHeader,
   HttpResultVariantOk,
-} from "shared_types/types/shared_types";
+} from "shared_types/app";
 
 export async function request({
   url,
@@ -19,7 +19,7 @@ export async function request({
 
   const responseHeaders = Array.from(
     response.headers.entries(),
-    ([name, value]) => new HttpHeader(name, value)
+    ([name, value]) => new HttpHeader(name, value),
   );
 
   const body = await response.arrayBuffer();
@@ -28,7 +28,7 @@ export async function request({
     new HttpResponse(
       response.status,
       responseHeaders,
-      Array.from(new Uint8Array(body))
-    )
+      Array.from(new Uint8Array(body)),
+    ),
   );
 }
